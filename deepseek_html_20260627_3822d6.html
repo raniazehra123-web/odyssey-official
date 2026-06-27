@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🧩 Jigsaw Odyssey - 100 Levels</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            background: #0b0b1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            margin: 0;
+            padding: 15px;
+        }
+        .container {
+            background: #14142b;
+            padding: 20px 25px 25px;
+            border-radius: 35px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8);
+            max-width: 98vw;
+            max-height: 98vh;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .top-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 15px 25px;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        .top-bar h1 {
+            color: #e0e0ff;
+            font-size: 24px;
+            margin: 0;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+        .level-info {
+            color: #aaa;
+            font-size: 18px;
+            background: #222244;
+            padding: 4px 22px;
+            border-radius: 40px;
+            border: 1px solid #444477;
+        }
+        .level-info span {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .theme-badge {
+            color: #aaf0c0;
+            font-size: 16px;
+            background: #1a2a2a;
+            padding: 4px 18px;
+            border-radius: 40px;
+            border: 1px solid #2a5a4a;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: #3a3a7a;
+            border: none;
+            color: white;
+            font-size: 16px;
+            padding: 6px 22px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .btn:hover {
+            background: #5a5aaa;
+            transform: scale(1.03);
+        }
+        .btn.primary {
+            background: #6c5ce7;
+        }
+        .btn.primary:hover {
+            background: #7d6ff0;
+        }
+        .btn.gold {
+            background: #f9ca24;
+            color: #1a1a2e;
+        }
+        .btn.gold:hover {
+            background: #f9d74a;
+        }
+
+        .puzzle-area {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .board {
+            display: grid;
+            gap: 2px;
+            background: #0a0a1a;
+            padding: 8px;
+            border-radius: 14px;
+            border: 2px solid #2a2a5a;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.6);
+            flex-shrink: 0;
+        }
+        .slot {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 3px;
+            border: 1px dashed #2a2a5a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            aspect-ratio: 1/1;
+        }
+        .slot .piece {
+            width: 100% !important;
+            height: 100% !important;
+            border-radius: 3px;
+            cursor: pointer;
+            border: 2px solid #4a4a8a;
+            transition: transform 0.1s;
+            display: block;
+            background-repeat: no-repeat !important;
+        }
+        .slot .piece:hover {
+            transform: scale(1.04);
+            z-index: 10;
+            border-color: #ffd700;
+        }
+        .slot .piece.placed-correct {
+            border-color: #6fcf97;
+            box-shadow: 0 0 8px rgba(111, 207, 151, 0.2);
+        }
+        .slot .piece.selected {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            transform: scale(1.02);
+            z-index: 20;
+        }
+
+        .tray {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            background: #0f0f22;
+            padding: 10px;
+            border-radius: 14px;
+            border: 2px solid #2a2a4a;
+            min-width: 200px;
+            min-height: 200px;
+            max-height: 500px;
+            overflow-y: auto;
+            align-content: flex-start;
+        }
+        .tray .piece {
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid #3a3a6a;
+            transition: transform 0.1s, border-color 0.1s;
+            display: block;
+            flex-shrink: 0;
+            background-repeat: no-repeat !important;
+        }
+        .tray .piece:hover {
+            transform: scale(1.08);
+            border-color: #8888cc;
+            z-index: 5;
+        }
+        .tray .piece.selected {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .status-bar {
+            width: 100%;
+            text-align: center;
+            color: #8888bb;
+            font-size: 16px;
+            margin: 10px 0 5px;
+            padding: 6px;
+            background: #0a0a1a;
+            border-radius: 30px;
+            border: 1px solid #222244;
+        }
+        .status-bar .win {
+            color: #f9ca24;
+            font-weight: bold;
+            font-size: 22px;
+            text-shadow: 0 0 30px rgba(249, 202, 36, 0.2);
+        }
+
+        .scroll-wrap {
+            overflow: auto;
+            max-width: 85vw;
+            max-height: 70vh;
+            border-radius: 12px;
+        }
+        .scroll-wrap::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .scroll-wrap::-webkit-scrollbar-track {
+            background: #0a0a1a;
+        }
+        .scroll-wrap::-webkit-scrollbar-thumb {
+            background: #3a3a7a;
+            border-radius: 10px;
+        }
+
+        .footer {
+            color: #444466;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        @media (max-width: 700px) {
+            .container {
+                padding: 10px;
+            }
+            .top-bar h1 {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <div class="top-bar">
+        <h1>🧩 Odyssey</h1>
+        <div class="level-info">Level <span id="levelDisplay">1</span> / 100</div>
+        <div class="theme-badge" id="themeDisplay">🌸 Flowers</div>
+        <div class="btn-group">
+            <button class="btn" id="prevBtn">◀</button>
+            <button class="btn primary" id="shuffleBtn">🔀 Shuffle</button>
+            <button class="btn gold" id="nextBtn">▶ Next Level</button>
+        </div>
+    </div>
+
+    <div class="puzzle-area">
+        <div class="scroll-wrap">
+            <div class="board" id="board"></div>
+        </div>
+        <div class="scroll-wrap" style="max-height:60vh;">
+            <div class="tray" id="tray"></div>
+        </div>
+    </div>
+
+    <div class="status-bar" id="status">Click a piece, then click its correct spot on the board</div>
+    <div class="footer">Click-to-Select · Click-to-Place · Auto-advances when complete!</div>
+</div>
+
+<script>
+    (function() {
+        // ----- CONFIGURATION: 100 LEVELS -----
+        const LEVELS = [];
+        for (let i = 1; i <= 100; i++) {
+            let gridSize, theme;
+            if (i <= 10) { gridSize = 5; theme = 'flowers'; }
+            else if (i <= 20) { gridSize = 10; theme = 'sky'; }
+            else if (i <= 30) { gridSize = 15; theme = 'nature'; }
+            else if (i <= 50) { gridSize = 20; theme = 'famous'; }
+            else if (i <= 70) { gridSize = 30; theme = 'art'; }
+            else { gridSize = 50; theme = 'danger'; }
+            LEVELS.push({ level: i, gridSize, theme });
+        }
+
+        // ----- STATE -----
+        let currentLevelIndex = 0;
+        let gridSize = 5;
+        let currentTheme = 'flowers';
+        let totalPieces = 25;
+        let levelComplete = false;
+
+        let pieces = [];
+        let boardSlots = [];
+        let selectedPieceId = null;
+
+        const boardEl = document.getElementById('board');
+        const trayEl = document.getElementById('tray');
+        const statusEl = document.getElementById('status');
+        const levelDisplay = document.getElementById('levelDisplay');
+        const themeDisplay = document.getElementById('themeDisplay');
+
+        let currentImageUrl = '';
+
+        // ----- GENERATE FLOWER IMAGE -----
+        function generateFlowerImage(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            const w = size, h = size;
+            
+            // Sky blue background
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, h);
+            skyGrad.addColorStop(0, '#87CEEB');
+            skyGrad.addColorStop(1, '#E0F0FF');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, w, h);
+            
+            // Green grass at bottom
+            ctx.fillStyle = '#4CAF50';
+            ctx.fillRect(0, h * 0.85, w, h * 0.15);
+            
+            // Green stem
+            ctx.strokeStyle = '#2E7D32';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(w/2, h * 0.85);
+            ctx.quadraticCurveTo(w/2 - 20, h * 0.6, w/2, h * 0.4);
+            ctx.stroke();
+            
+            // Stem leaves
+            ctx.fillStyle = '#388E3C';
+            ctx.beginPath();
+            ctx.ellipse(w/2 - 25, h * 0.65, 15, 8, -0.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(w/2 + 25, h * 0.55, 15, 8, 0.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Flower center
+            const centerX = w/2;
+            const centerY = h * 0.35;
+            const petalSize = w * 0.12;
+            
+            // Petal colors - pink, purple, blue
+            const petalColors = [
+                '#FF69B4', '#FF1493', '#DB7093',
+                '#9B59B6', '#8E44AD', '#A569BD',
+                '#3498DB', '#5DADE2', '#85C1E9'
+            ];
+            
+            // Draw 8 outer petals
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const px = centerX + Math.cos(angle) * petalSize * 1.2;
+                const py = centerY + Math.sin(angle) * petalSize * 1.2;
+                
+                ctx.save();
+                ctx.translate(px, py);
+                ctx.rotate(angle);
+                
+                ctx.beginPath();
+                ctx.ellipse(0, 0, petalSize * 0.7, petalSize * 0.4, 0, 0, Math.PI * 2);
+                ctx.fillStyle = petalColors[i % petalColors.length];
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+            
+            // Draw 6 inner petals
+            for (let i = 0; i < 6; i++) {
+                const angle = (i / 6) * Math.PI * 2 + 0.3;
+                const px = centerX + Math.cos(angle) * petalSize * 0.6;
+                const py = centerY + Math.sin(angle) * petalSize * 0.6;
+                
+                ctx.save();
+                ctx.translate(px, py);
+                ctx.rotate(angle);
+                
+                ctx.beginPath();
+                ctx.ellipse(0, 0, petalSize * 0.4, petalSize * 0.25, 0, 0, Math.PI * 2);
+                ctx.fillStyle = petalColors[(i + 3) % petalColors.length];
+                ctx.fill();
+                
+                ctx.restore();
+            }
+            
+            // Yellow center
+            const centerGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, petalSize * 0.5);
+            centerGrad.addColorStop(0, '#FFF9C4');
+            centerGrad.addColorStop(0.5, '#FFD54F');
+            centerGrad.addColorStop(1, '#F9A825');
+            ctx.fillStyle = centerGrad;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, petalSize * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Center dots
+            ctx.fillStyle = '#F57F17';
+            for (let i = 0; i < 12; i++) {
+                const angle = (i / 12) * Math.PI * 2;
+                const dx = centerX + Math.cos(angle) * petalSize * 0.25;
+                const dy = centerY + Math.sin(angle) * petalSize * 0.25;
+                ctx.beginPath();
+                ctx.arc(dx, dy, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Sun
+            ctx.fillStyle = '#FFD54F';
+            ctx.globalAlpha = 0.3;
+            ctx.beginPath();
+            ctx.arc(w * 0.9, h * 0.1, 40, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+            
+            return canvas.toDataURL('image/png');
+        }
+
+        // ----- GENERATE THEME IMAGE -----
+        function generateThemeImage(theme, size) {
+            if (theme === 'flowers') {
+                return generateFlowerImage(size);
+            }
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            const colors = {
+                sky: ['#1a237e', '#4fc3f7', '#b3e5fc'],
+                nature: ['#2e7d32', '#388e3c', '#1b5e20'],
+                famous: ['#f9a825', '#f57f17', '#bf360c'],
+                art: ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71'],
+                danger: ['#4a0e0e', '#1a0a0a', '#ff4400']
+            };
+            
+            const themeColors = colors[theme] || colors.art;
+            
+            const grad = ctx.createLinearGradient(0, 0, size, size);
+            themeColors.forEach((c, i) => {
+                grad.addColorStop(i / (themeColors.length - 1), c);
+            });
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, size, size);
+            
+            ctx.fillStyle = 'rgba(255,255,255,0.1)';
+            for (let i = 0; i < 20; i++) {
+                const x = Math.random() * size;
+                const y = Math.random() * size;
+                ctx.beginPath();
+                ctx.arc(x, y, 10 + Math.random() * 30, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            return canvas.toDataURL('image/png');
+        }
+
+        // ----- BUILD PIECES -----
+        function buildPieces(size) {
+            const newPieces = [];
+            const total = size * size;
+            for (let id = 0; id < total; id++) {
+                const row = Math.floor(id / size);
+                const col = id % size;
+                newPieces.push({
+                    id: id,
+                    row: row,
+                    col: col,
+                    placed: false,
+                    element: null
+                });
+            }
+            return newPieces;
+        }
+
+        // ----- CREATE PIECE ELEMENT (NO NUMBERS!) -----
+        function createPieceElement(piece, size, imageUrl) {
+            const div = document.createElement('div');
+            div.className = 'piece';
+            div.dataset.id = piece.id;
+            
+            const pieceSize = 300 / size;
+            const xPos = -piece.col * pieceSize;
+            const yPos = -piece.row * pieceSize;
+            
+            // Just the image - no text!
+            div.style.backgroundImage = `url('${imageUrl}')`;
+            div.style.backgroundPosition = `${xPos}px ${yPos}px`;
+            div.style.backgroundSize = `${300}px ${300}px`;
+            div.style.backgroundRepeat = 'no-repeat';
+            div.style.backgroundColor = '#2a2a4a';
+            
+            div.addEventListener('click', (e) => {
+                e.stopPropagation();
+                onPieceClick(piece.id);
+            });
+            
+            return div;
+        }
+
+        // ----- UPDATE PIECE ELEMENT -----
+        function updatePieceElement(piece, imageUrl) {
+            if (!piece.element) return;
+            const size = gridSize;
+            const pieceSize = 300 / size;
+            const xPos = -piece.col * pieceSize;
+            const yPos = -piece.row * pieceSize;
+            
+            piece.element.style.backgroundImage = `url('${imageUrl}')`;
+            piece.element.style.backgroundPosition = `${xPos}px ${yPos}px`;
+            piece.element.style.backgroundSize = `${300}px ${300}px`;
+        }
+
+        // ----- RENDER -----
+        function render() {
+            const size = gridSize;
+            const total = size * size;
+
+            const boardPieceSize = Math.min(60, Math.floor(400 / size));
+
+            // --- RENDER BOARD ---
+            boardEl.style.gridTemplateColumns = `repeat(${size}, ${boardPieceSize}px)`;
+            boardEl.style.gridTemplateRows = `repeat(${size}, ${boardPieceSize}px)`;
+            boardEl.innerHTML = '';
+            
+            for (let i = 0; i < total; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'slot';
+                slot.dataset.index = i;
+                slot.addEventListener('click', () => onSlotClick(i));
+                boardEl.appendChild(slot);
+            }
+
+            // Fill board with placed pieces
+            for (let i = 0; i < total; i++) {
+                const slot = boardEl.children[i];
+                const pieceId = boardSlots[i];
+                if (pieceId !== null) {
+                    const piece = pieces.find(p => p.id === pieceId);
+                    if (piece && piece.placed && piece.element) {
+                        piece.element.style.width = '100%';
+                        piece.element.style.height = '100%';
+                        slot.appendChild(piece.element);
+                        piece.element.classList.add('placed-correct');
+                        if (selectedPieceId === piece.id) {
+                            piece.element.classList.add('selected');
+                        } else {
+                            piece.element.classList.remove('selected');
+                        }
+                    }
+                }
+            }
+
+            // --- RENDER TRAY ---
+            trayEl.innerHTML = '';
+            
+            const unplaced = pieces.filter(p => !p.placed);
+            const shuffled = [...unplaced].sort(() => Math.random() - 0.5);
+            
+            let trayPieceSize = 60;
+            if (unplaced.length > 50) trayPieceSize = 50;
+            if (unplaced.length > 100) trayPieceSize = 45;
+            if (unplaced.length > 300) trayPieceSize = 40;
+            if (unplaced.length > 500) trayPieceSize = 35;
+            if (unplaced.length > 1000) trayPieceSize = 28;
+            
+            for (const p of shuffled) {
+                if (!p.element) {
+                    p.element = createPieceElement(p, size, currentImageUrl);
+                } else {
+                    updatePieceElement(p, currentImageUrl);
+                }
+                p.element.style.width = trayPieceSize + 'px';
+                p.element.style.height = trayPieceSize + 'px';
+                p.element.classList.remove('placed-correct', 'selected');
+                if (selectedPieceId === p.id) {
+                    p.element.classList.add('selected');
+                }
+                trayEl.appendChild(p.element);
+            }
+
+            // Status
+            const placedCount = pieces.filter(p => p.placed).length;
+            if (placedCount === total) {
+                levelComplete = true;
+                statusEl.innerHTML = '<span class="win">🎉 LEVEL COMPLETE! 🎉 Auto-advancing...</span>';
+                setTimeout(() => {
+                    if (levelComplete) {
+                        nextLevel();
+                    }
+                }, 1500);
+            } else {
+                levelComplete = false;
+                statusEl.textContent = `${placedCount} / ${total} pieces placed  |  Click a piece, then click its matching slot`;
+            }
+
+            levelDisplay.textContent = currentLevelIndex + 1;
+            const themeNames = {
+                flowers: '🌸 Flowers',
+                sky: '☁️ Sky',
+                nature: '🌿 Nature',
+                famous: '🏛️ Famous Places',
+                art: '🎨 Art',
+                danger: '🔥 Dangerous Places'
+            };
+            themeDisplay.textContent = themeNames[currentTheme] || currentTheme;
+        }
+
+        // ----- CLICK LOGIC -----
+        function onPieceClick(pieceId) {
+            if (levelComplete) return;
+            const piece = pieces.find(p => p.id === pieceId);
+            if (!piece || piece.placed) return;
+
+            if (selectedPieceId === pieceId) {
+                selectedPieceId = null;
+                render();
+                return;
+            }
+
+            selectedPieceId = pieceId;
+            render();
+            statusEl.textContent = `Selected piece. Click its matching slot.`;
+        }
+
+        function onSlotClick(slotIndex) {
+            if (levelComplete) return;
+            if (selectedPieceId === null) {
+                statusEl.textContent = '⚠️ First, click a piece in the tray to select it.';
+                return;
+            }
+
+            const piece = pieces.find(p => p.id === selectedPieceId);
+            if (!piece || piece.placed) {
+                selectedPieceId = null;
+                render();
+                return;
+            }
+
+            if (boardSlots[slotIndex] !== null) {
+                statusEl.textContent = '❌ That slot is already occupied!';
+                return;
+            }
+
+            const targetRow = Math.floor(slotIndex / gridSize);
+            const targetCol = slotIndex % gridSize;
+
+            if (piece.row === targetRow && piece.col === targetCol) {
+                piece.placed = true;
+                boardSlots[slotIndex] = piece.id;
+                selectedPieceId = null;
+                render();
+                if (!levelComplete) {
+                    statusEl.textContent = '✅ Correct! Great job!';
+                }
+            } else {
+                statusEl.textContent = `❌ Wrong spot! Try another slot.`;
+                selectedPieceId = null;
+                render();
+            }
+        }
+
+        // ----- LOAD LEVEL -----
+        function loadLevel(index) {
+            const levelData = LEVELS[index];
+            if (!levelData) return;
+            
+            currentLevelIndex = index;
+            gridSize = levelData.gridSize;
+            currentTheme = levelData.theme;
+            totalPieces = gridSize * gridSize;
+            levelComplete = false;
+
+            currentImageUrl = generateThemeImage(currentTheme, 300);
+
+            pieces = buildPieces(gridSize);
+            boardSlots = new Array(totalPieces).fill(null);
+            selectedPieceId = null;
+
+            for (const p of pieces) {
+                p.element = createPieceElement(p, gridSize, currentImageUrl);
+            }
+
+            render();
+            statusEl.textContent = `Level ${index+1} · ${gridSize}×${gridSize} · Match the pieces!`;
+        }
+
+        // ----- NAVIGATION -----
+        function nextLevel() {
+            if (currentLevelIndex < 99) {
+                loadLevel(currentLevelIndex + 1);
+            } else {
+                statusEl.innerHTML = '<span class="win">🏆 YOU COMPLETED ALL 100 LEVELS! 🏆</span>';
+            }
+        }
+
+        function prevLevel() {
+            if (currentLevelIndex > 0) {
+                loadLevel(currentLevelIndex - 1);
+            }
+        }
+
+        function shuffleCurrent() {
+            if (levelComplete) return;
+            for (const p of pieces) {
+                p.placed = false;
+                if (p.element) {
+                    p.element.remove();
+                }
+                p.element = createPieceElement(p, gridSize, currentImageUrl);
+            }
+            boardSlots = new Array(totalPieces).fill(null);
+            selectedPieceId = null;
+            render();
+            statusEl.textContent = '🔄 Shuffled! Try again.';
+        }
+
+        // ----- INIT -----
+        document.getElementById('nextBtn').addEventListener('click', nextLevel);
+        document.getElementById('prevBtn').addEventListener('click', prevLevel);
+        document.getElementById('shuffleBtn').addEventListener('click', shuffleCurrent);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextLevel();
+            if (e.key === 'ArrowLeft') prevLevel();
+            if (e.key === 'r' || e.key === 'R') shuffleCurrent();
+        });
+
+        loadLevel(0);
+    })();
+</script>
+</body>
+</html>
